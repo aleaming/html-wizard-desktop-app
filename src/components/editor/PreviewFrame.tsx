@@ -15,6 +15,7 @@ export interface PreviewFrameProps extends PreviewFrameCallbacks {
   html: string;
   scale: number;
   viewport: ViewportSize;
+  baseUrl?: string;
   className?: string;
 }
 
@@ -191,38 +192,50 @@ function buildBridgeScript(originToken: string): string {
 
 // ===== HTML Injection =====
 
-function injectBridgeScript(html: string, originToken: string): string {
+function injectBridgeScript(html: string, originToken: string, baseUrl?: string): string {
   const sanitized = sanitizeHtml(html);
   const fullDoc = ensureFullDocument(sanitized);
   const bridgeTag = `<script>${buildBridgeScript(originToken)}<\/script>`;
 
-  // Insert before </body>
-  const bodyCloseMatch = fullDoc.match(/<\/body>/i);
+  let result = fullDoc;
+
+  // Inject <base> tag for relative path resolution (images, CSS, JS)
+  if (baseUrl) {
+    const baseTag = `<base href="${baseUrl}/">`;
+    const headMatch = result.match(/<head[^>]*>/i);
+    if (headMatch && headMatch.index !== undefined) {
+      const insertPos = headMatch.index + headMatch[0].length;
+      result = result.slice(0, insertPos) + '\n' + baseTag + '\n' + result.slice(insertPos);
+    }
+  }
+
+  // Insert bridge script before </body>
+  const bodyCloseMatch = result.match(/<\/body>/i);
   if (bodyCloseMatch && bodyCloseMatch.index !== undefined) {
     return (
-      fullDoc.slice(0, bodyCloseMatch.index) +
+      result.slice(0, bodyCloseMatch.index) +
       bridgeTag +
-      fullDoc.slice(bodyCloseMatch.index)
+      result.slice(bodyCloseMatch.index)
     );
   }
 
   // Fallback: append at end
-  return fullDoc + bridgeTag;
+  return result + bridgeTag;
 }
 
 // ===== Component =====
 
 const PreviewFrame = React.forwardRef<PreviewFrameHandle, PreviewFrameProps>(
   function PreviewFrame(
-    { html, scale, viewport, className, onElementHover, onElementClick, onElementDblClick, onContextMenu },
+    { html, scale, viewport, baseUrl, className, onElementHover, onElementClick, onElementDblClick, onContextMenu },
     ref
   ) {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const originToken = useRef(crypto.randomUUID());
 
     const getInjectedHtml = useCallback(
-      (source: string) => injectBridgeScript(source, originToken.current),
-      []
+      (source: string) => injectBridgeScript(source, originToken.current, baseUrl),
+      [baseUrl]
     );
 
     // Expose imperative reload

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import PreviewFrame, { PreviewFrameHandle } from '../editor/PreviewFrame';
 import ElementOverlay from '../editor/ElementOverlay';
 import CodeEditor, { CodeEditorHandle } from '../editor/CodeEditor';
@@ -34,6 +35,7 @@ const CenterPanel: React.FC = () => {
   const codeEditorRef = useRef<CodeEditorHandle>(null);
 
   const { activeFile, readFile, openProjectDialog } = useProject();
+  const projectInfo = useAppStore(s => s.projectInfo);
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [hoveredElement, setHoveredElement] = useState<ElementOverlayData | null>(null);
   const [selectedElement, setSelectedElement] = useState<ElementSelectionData | null>(null);
@@ -47,12 +49,18 @@ const CenterPanel: React.FC = () => {
     if (activeFile) {
       readFile(activeFile).then(content => {
         setFileContent(content);
-        setShowCode(true);
       }).catch(() => setFileContent(null));
     } else {
       setFileContent(null);
     }
   }, [activeFile, readFile]);
+
+  // Listen for toggle-code-view custom event (Cmd+\)
+  useEffect(() => {
+    const handler = () => setShowCode(prev => !prev);
+    window.addEventListener('toggle-code-view', handler);
+    return () => window.removeEventListener('toggle-code-view', handler);
+  }, []);
 
   // Scale calculation
   const calculateScale = useCallback(() => {
@@ -218,6 +226,7 @@ const CenterPanel: React.FC = () => {
                   html={fileContent}
                   scale={scale / 100}
                   viewport={{ width: viewportWidth, height: viewportHeight }}
+                  baseUrl={projectInfo ? convertFileSrc(activeFile ? activeFile.substring(0, activeFile.lastIndexOf('/')) : projectInfo.root) : undefined}
                   onElementHover={handleElementHover}
                   onElementClick={handleElementSelect}
                 />
