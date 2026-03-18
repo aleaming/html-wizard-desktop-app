@@ -1,0 +1,27 @@
+# Subject: Request for Tauri-Based Visual HTML Editor with AI Integration
+
+I am requesting the development of a desktop application using Tauri that provides AI-powered visual editing capabilities for HTML/CSS/JS projects.
+
+## Core Functionality
+
+The application should integrate with LLM APIs (Claude Code, Gemini, or similar) through user-provided API keys. Users will open existing HTML/CSS/JS project folders to access a visual editor interface that displays rendered HTML files with direct editing capabilities.
+
+## Visual Editing Features
+
+Users should be able to click directly on page elements to modify content, colors, and images. Color changes should utilize existing CSS root variables when available, with options for custom color selection. Image handling should support three methods:
+
+- Uploading local files
+- Linking to external URLs
+- AI-generated/edited images through the integrated LLM
+
+## AI Integration
+
+Each clickable element should trigger an inline AI agent specifically focused on that code section to assist with targeted edits. Additionally, a persistent chat interface positioned on the left side of the screen should handle broader requests affecting multiple files or larger structural changes to the project.
+
+## File System Access
+
+The application must have read, write, and create permissions for files and folders within the selected project directory. Users should provide explicit confirmation when granting these permissions during the project opening process.
+
+This tool should streamline the web development workflow by combining visual editing with intelligent code assistance, making complex HTML/CSS modifications more accessible while maintaining professional development standards.
+
+Please let me know if you need clarification on any aspect of this specification or would like to discuss implementation details.

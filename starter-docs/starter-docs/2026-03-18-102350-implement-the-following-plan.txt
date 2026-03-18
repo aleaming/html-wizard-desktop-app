@@ -1,0 +1,316 @@
+╭─── Claude Code v2.1.78 ──────────────────────────────────────────────────────╮
+│                                                    │ Tips for getting        │
+│                 Welcome back Alex!                 │ started                 │
+│                                                    │ Run /init to create a … │
+│                       ▐▛███▜▌                      │ ─────────────────────── │
+│                      ▝▜█████▛▘                     │ Recent activity         │
+│                        ▘▘ ▝▝                       │ No recent activity      │
+│        Opus 4.6 (1M context) · Claude Max ·        │                         │
+│        alex@leamingdesign.com's Organization       │                         │
+│    ~/…/custom-work-mates/html-wizard-desktop-app   │                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Plan to implement                                                            │
+│                                                                              │
+│ Plan: Create ultimate-meta-prompt Skill                                      │
+│                                                                              │
+│ Context                                                                      │
+│                                                                              │
+│ The user successfully used the document-integrator skill to synthesize 12    │
+│ prompt engineering variations (CoT, Role-Persona, Step-Back, etc.) into one  │
+│ 740-line ultimate meta prompt. They want to package this workflow as a       │
+│ reusable skill that works for any collection of prompt files, not just this  │
+│ project.                                                                     │
+│                                                                              │
+│ The document-integrator was repurposed for this task but has an impedance    │
+│ mismatch — it expects TWO competing document sets, while prompt synthesis    │
+│ needs ONE folder of variations + an optional seed prompt, with               │
+│ prompt-specific assessment criteria.                                         │
+│                                                                              │
+│ What to Create                                                               │
+│                                                                              │
+│ Single file: /Users/alexleaming/.claude/skills/ultimate-meta-prompt/SKILL.md │
+│  (~400 lines)                                                                │
+│                                                                              │
+│ Skill Design                                                                 │
+│                                                                              │
+│ Frontmatter                                                                  │
+│                                                                              │
+│ - name: ultimate-meta-prompt                                                 │
+│ - description: Trigger phrases include "combine these prompts", "synthesize  │
+│ my prompt variations", "merge prompt files", "create an ultimate prompt",    │
+│ "meta-prompt synthesis"                                                      │
+│                                                                              │
+│ Pipeline (6 Steps)                                                           │
+│                                                                              │
+│ Step: 1. Collect Inputs                                                      │
+│ Agent(s): None (orchestrator)                                                │
+│ Parallel?: —                                                                 │
+│ Purpose: Get: prompt folder (required), project context (required), seed     │
+│ prompt                                                                       │
+│   (optional), target LLM (optional), length preference (optional)            │
+│ ────────────────────────────────────────                                     │
+│ Step: 2. Plan Synthesis                                                      │
+│ Agent(s): None (orchestrator)                                                │
+│ Parallel?: —                                                                 │
+│ Purpose: Glob files, identify techniques via quick scan, categorize, propose │
+│                                                                              │
+│   approach (Technique Fusion / Backbone+Enrichment / Full Reconstruction)    │
+│ ────────────────────────────────────────                                     │
+│ Step: 3. Assess Techniques                                                   │
+│ Agent(s): 2-4 Technique Assessors + optional Seed Assessor                   │
+│ Parallel?: Yes                                                               │
+│ Purpose: Each assesses a subset of files for: technique identification,      │
+│ prompt                                                                       │
+│   effectiveness, unique contributions, reusable technique elements           │
+│ ────────────────────────────────────────                                     │
+│ Step: 4. Synthesize                                                          │
+│ Agent(s): 1 Synthesizer                                                      │
+│ Parallel?: No                                                                │
+│ Purpose: Reads assessments, reads originals, builds the ultimate prompt      │
+│   following 9 synthesis rules (command voice, technique fusion,              │
+│ deduplication,                                                               │
+│   meta-instructions, etc.)                                                   │
+│ ────────────────────────────────────────                                     │
+│ Step: 5. Review                                                              │
+│ Agent(s): 1 Prompt Effectiveness Reviewer                                    │
+│ Parallel?: No                                                                │
+│ Purpose: Independent review on 7 prompt-specific criteria (actionability,    │
+│   completeness, cognitive load, constraint clarity, technique integration,   │
+│   session management, self-verification)                                     │
+│ ────────────────────────────────────────                                     │
+│ Step: 6. Finalize                                                            │
+│ Agent(s): 0-1 Revision Agent                                                 │
+│ Parallel?: Conditional                                                       │
+│ Purpose: If APPROVED: deliver. If NEEDS REVISION: revise and re-review (up   │
+│ to 2                                                                         │
+│   cycles)                                                                    │
+│                                                                              │
+│ Key Differences from Document-Integrator                                     │
+│                                                                              │
+│ Aspect: Input                                                                │
+│ Document-Integrator: TWO required document sets                              │
+│ Ultimate-Meta-Prompt: ONE folder + optional seed                             │
+│ ────────────────────────────────────────                                     │
+│ Aspect: Assessment focus                                                     │
+│ Document-Integrator: Content quality & accuracy                              │
+│ Ultimate-Meta-Prompt: Technique identification & prompt effectiveness        │
+│ ────────────────────────────────────────                                     │
+│ Aspect: Synthesis rules                                                      │
+│ Document-Integrator: Merge best content                                      │
+│ Ultimate-Meta-Prompt: Fuse techniques, enforce command voice, add            │
+│   meta-instructions                                                          │
+│ ────────────────────────────────────────                                     │
+│ Aspect: Quality criteria                                                     │
+│ Document-Integrator: 5 doc criteria (accuracy, completeness, clarity,        │
+│   consistency, enhancement)                                                  │
+│ Ultimate-Meta-Prompt: 7 prompt criteria (actionability, completeness,        │
+│ cognitive                                                                    │
+│   load, constraint clarity, technique integration, session management,       │
+│   self-verification)                                                         │
+│ ────────────────────────────────────────                                     │
+│ Aspect: Output                                                               │
+│ Document-Integrator: Merged document                                         │
+│ Ultimate-Meta-Prompt: Functioning prompt with meta-instructions              │
+│                                                                              │
+│ Three Synthesis Approaches (user picks)                                      │
+│                                                                              │
+│ - A: Technique Fusion — Extract strongest element from each technique, weave │
+│  into one structure                                                          │
+│ - B: Backbone + Enrichment — Best prompt as backbone, enrich with others'    │
+│ unique contributions                                                         │
+│ - C: Full Reconstruction — All prompts as source material, write from        │
+│ scratch                                                                      │
+│                                                                              │
+│ 9 Synthesis Rules (core of the Synthesizer prompt)                           │
+│                                                                              │
+│ 1. Structure over concatenation — one coherent org structure                 │
+│ 2. Command voice — directive, not advisory                                   │
+│ 3. Technique fusion — absorb effects without labeling techniques             │
+│ 4. Resolve all contradictions — never present alternatives                   │
+│ 5. Deduplicate ruthlessly                                                    │
+│ 6. Add meta-instructions (session mgmt, output format, continuation          │
+│ protocol)                                                                    │
+│ 7. Front-load critical information                                           │
+│ 8. Requirements traceability (if seed provided)                              │
+│ 9. Anti-patterns section                                                     │
+│                                                                              │
+│ Edge Cases Handled                                                           │
+│                                                                              │
+│ - 2-3 files: 2 assessors, simpler synthesis                                  │
+│ - 20-30 files: 4 assessors, batch processing                                 │
+│ - No seed prompt: infer requirements from consensus                          │
+│ - Mixed quality: weight contributions by effectiveness rating                │
+│ - Non-prompt files detected: flag to user                                    │
+│ - Single file: reject, suggest prompt-lookup skill instead                   │
+│                                                                              │
+│ Workspace Layout                                                             │
+│                                                                              │
+│ ultimate-meta-prompt-workspace/                                              │
+│   seed-requirements.md              (if seed provided)                       │
+│   technique-assessment-A.md                                                  │
+│   technique-assessment-B.md                                                  │
+│   technique-assessment-C.md         (if 7+ files)                            │
+│   synthesis-log.md                                                           │
+│   prompt-review.md                                                           │
+│   outputs/                                                                   │
+│     ultimate-prompt-draft.md                                                 │
+│     ultimate-meta-prompt.md         (final)                                  │
+│                                                                              │
+│ Critical Files                                                               │
+│                                                                              │
+│ File: /Users/alexleaming/.claude/skills/ultimate-meta-prompt/SKILL.md        │
+│ Role: CREATE — the new skill                                                 │
+│ ────────────────────────────────────────                                     │
+│ File: /Users/alexleaming/.claude/skills/document-integrator/SKILL.md         │
+│ Role: READ ONLY — structural template to follow                              │
+│                                                                              │
+│ Verification                                                                 │
+│                                                                              │
+│ 1. After creating the skill, run /ultimate-meta-prompt against the existing  │
+│ meta-prompts-gens-v1/ folder with the seed prompt to verify it produces a    │
+│ comparable result                                                            │
+│ 2. Confirm the skill appears in the available skills list                    │
+│ 3. Verify all agent prompts use generic placeholders (no domain-specific     │
+│ references)                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+⏺ ★ Insight ─────────────────────────────────────
+  This skill follows the agent orchestration pattern — a SKILL.md file that acts
+   as a "conductor" dispatching specialized sub-agents in a pipeline. The key
+  architectural choice is using the Agent tool with parallel technique assessors
+   (step 3) to handle variable input sizes, then funneling into a single
+  synthesizer. This is the same pattern used by document-integrator but with
+  prompt-engineering-specific assessment criteria and synthesis rules.
+  ─────────────────────────────────────────────────
+
+  Let me start by reading the document-integrator skill as the structural
+  template.
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Good, I have the full document-integrator template. Let me check if the target
+   directory exists and look at the transcript for any additional context about
+  the synthesis rules.
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Bash(mkdir -p /Users/alexleaming/.claude/skills/ultimate-meta-prompt)
+  ⎿  Done
+
+⏺ Now let me create the skill file. This is a substantial piece of work — I'll
+  build the complete SKILL.md following the document-integrator's structure but
+  with all the prompt-specific adaptations from the plan.
+
+  ★ Insight ─────────────────────────────────────
+  Why a separate skill vs. reusing document-integrator? The impedance mismatch
+  is fundamental: document-integrator assumes TWO competing sets of equal
+  status, but prompt synthesis needs ONE folder of variations where each file
+  represents a different technique (CoT, Role-Persona, etc.). The assessment
+  criteria are completely different — we're evaluating prompt engineering
+  effectiveness (actionability, cognitive load, technique integration), not
+  document quality (accuracy, completeness). And the synthesis rules are unique:
+   "command voice," "technique fusion without labeling," and "add
+  meta-instructions" have no analog in document merging.
+  ─────────────────────────────────────────────────
+
+⏺ Write(~/.claude/skills/ultimate-meta-prompt/SKILL.md)
+  ⎿  Wrote 441 lines to
+     ../../../.claude/skills/ultimate-meta-prompt/SKILL.md
+       1 ---
+       2 name: ultimate-meta-prompt
+       3 description: >
+       4   Synthesize multiple prompt engineering variations into one sup
+         erior meta-prompt using Agent Teams.
+       5   Use this skill whenever the user wants to combine prompts, mer
+         ge prompt files, synthesize prompt
+       6   variations, create an "ultimate prompt" from multiple versions
+         , or fuse prompt engineering techniques.
+       7   Also trigger when the user mentions "meta-prompt synthesis", "
+         combine these prompts", "merge prompt
+       8   files", "synthesize my prompt variations", "create an ultimate
+          prompt", "fuse these techniques",
+       9   "best-of-all prompt", or any request involving a collection of
+          prompt files that need to become one.
+      10   Even if the user just says "I have several versions of this pr
+         ompt" or "take the best from each
+     … +431 lines (ctrl+o to expand)
+
+⏺ ★ Insight ─────────────────────────────────────
+  Key design decisions in this skill:
+  1. Team sizing rules scale dynamically (2-4 assessors) based on input count,
+  avoiding the document-integrator's fixed 2-agent model. This prevents context
+  overflow for large sets and under-utilization for small ones.
+  2. The 9 Synthesis Rules are embedded directly in the Synthesizer agent's
+  prompt rather than as separate reference material. This is intentional — the
+  synthesizer needs these rules in its working context, not as a file to look
+  up.
+  3. Technique Fusion (Rule 3) is the most subtle rule: "absorb effects without
+  labeling techniques." This prevents the common failure mode where a merged
+  prompt reads like "Now using CoT: think step by step. Now using Role-Persona:
+  you are an expert..." — instead, the techniques become invisible
+  infrastructure.
+  ─────────────────────────────────────────────────
+
+  Now let me verify the skill was created correctly and check that it appears in
+   the skills system.
+
+⏺ Read 2 files (ctrl+o to expand)
+
+⏺ The skill is created at 441 lines and is already appearing in the available
+  skills list — I can see ultimate-meta-prompt in the system reminder. The skill
+   is live and ready to use.
+
+  ★ Insight ─────────────────────────────────────
+  Verification that the skill registered: Notice in the system reminder output,
+  ultimate-meta-prompt now appears in the skills list with its full trigger
+  description. Claude Code's auto-discovery mechanism picked it up immediately
+  because:
+  1. It's in the ~/.claude/skills/ directory (the global skills path)
+  2. The file is named SKILL.md (the convention Claude Code looks for)
+  3. The frontmatter has valid name and description fields
+
+  No plugin.json or manifest registration is needed for standalone skills —
+  placement in the right directory with proper frontmatter is sufficient.
+  ─────────────────────────────────────────────────
+
+  Here's what was created:
+
+  /Users/alexleaming/.claude/skills/ultimate-meta-prompt/SKILL.md — 441 lines
+
+  Skill structure:
+
+  - Step 1 (Collect Inputs): Gets prompt folder (required), project context
+  (required), plus optional seed prompt, target LLM, length preference
+  - Step 2 (Plan Synthesis): Globs files, quick-scans for techniques, proposes
+  one of 3 approaches (Technique Fusion / Backbone+Enrichment / Full
+  Reconstruction)
+  - Step 3 (Assess — parallel): 2-4 Technique Assessors + optional Seed
+  Assessor, each with prompt-specific criteria (actionability, specificity,
+  technique execution, structural clarity)
+  - Step 4 (Synthesize): Single Synthesizer agent enforcing the 9 Synthesis
+  Rules (command voice, technique fusion without labels, deduplication,
+  meta-instructions, front-loading, etc.)
+  - Step 5 (Review): Independent Effectiveness Reviewer scoring on 7
+  prompt-specific criteria (actionability, completeness, cognitive load,
+  constraint clarity, technique integration, session management,
+  self-verification)
+  - Step 6 (Finalize): Conditional revision loop (up to 2 cycles) with
+  structured delivery summary
+
+  Key differences from document-integrator:
+
+  - ONE input folder instead of two required document sets
+  - Technique-focused assessment instead of content quality assessment
+  - 9 synthesis rules specific to prompt engineering (command voice, technique
+  fusion, meta-instructions)
+  - 7 prompt effectiveness criteria instead of 5 document quality criteria
+  - Dynamic team sizing (2-4 assessors based on file count) with a sizing table
+  - Edge case handling for single files, no seed, mixed quality, 20+ file sets
+
+  The skill is already registered and visible in the skills list. You can invoke
+   it with /ultimate-meta-prompt or by saying "combine these prompts" /
+  "synthesize my prompt variations".
+
+✻ Baked for 3m 29s
