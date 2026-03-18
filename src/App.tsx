@@ -3,6 +3,7 @@ import LeftSidebar from './components/layout/LeftSidebar';
 import CenterPanel from './components/layout/CenterPanel';
 import RightSidebar from './components/layout/RightSidebar';
 import BottomPanel from './components/layout/BottomPanel';
+import SettingsDialog from './components/settings/SettingsDialog';
 import { useAppStore } from './store';
 
 const ResizeHandle: React.FC<{
@@ -45,6 +46,7 @@ const App: React.FC = () => {
   const [bottomHeight, setBottomHeight] = useState(200);
   const [showLeft, setShowLeft] = useState(true);
   const [showBottom, setShowBottom] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
 
   const leftWidthRef = useRef(leftWidth);
   const rightWidthRef = useRef(rightWidth);
@@ -86,6 +88,11 @@ const App: React.FC = () => {
       if (mod && e.shiftKey && e.key === 'z') {
         e.preventDefault();
         useAppStore.getState().redo();
+      }
+      // Settings: Cmd+,
+      if (mod && e.key === ',') {
+        e.preventDefault();
+        setShowSettings(prev => !prev);
       }
     };
 
@@ -157,6 +164,9 @@ const App: React.FC = () => {
           <BottomPanel height={bottomHeight} />
         </div>
       )}
+
+      {/* Settings Dialog */}
+      <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   );
 };

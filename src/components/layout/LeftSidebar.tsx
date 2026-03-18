@@ -1,9 +1,10 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import { useAppStore } from '../../store';
 import { useAI } from '../../hooks/useAI';
 import { ChatMessage } from '../../types';
 import ChatPanel from '../ai/ChatPanel';
 import ProviderSelector from '../ai/ProviderSelector';
+import SettingsDialog from '../settings/SettingsDialog';
 
 interface LeftSidebarProps {
   width: number;
@@ -12,6 +13,7 @@ interface LeftSidebarProps {
 const LeftSidebar: React.FC<LeftSidebarProps> = ({ width }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputRef = useRef('');
+  const [showSettings, setShowSettings] = useState(false);
 
   // Store state
   const activeConversationId = useAppStore((s) => s.activeConversationId);
@@ -122,9 +124,21 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ width }) => {
       style={{ width }}
     >
       {/* Header */}
-      <div className="flex items-center px-3 py-2 border-b border-gray-700">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700">
         <span className="text-sm font-semibold text-gray-100">HTML Wizard AI</span>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="p-1.5 text-gray-400 hover:text-gray-200 hover:bg-gray-700 rounded transition-colors"
+          title="Settings"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 10a2 2 0 100-4 2 2 0 000 4z" />
+            <path fillRule="evenodd" d="M6.5.8a1.5 1.5 0 013 0l.1.7a.7.7 0 001 .4l.6-.4a1.5 1.5 0 012.1 2.1l-.4.6a.7.7 0 00.4 1l.7.1a1.5 1.5 0 010 3l-.7.1a.7.7 0 00-.4 1l.4.6a1.5 1.5 0 01-2.1 2.1l-.6-.4a.7.7 0 00-1 .4l-.1.7a1.5 1.5 0 01-3 0l-.1-.7a.7.7 0 00-1-.4l-.6.4a1.5 1.5 0 01-2.1-2.1l.4-.6a.7.7 0 00-.4-1l-.7-.1a1.5 1.5 0 010-3l.7-.1a.7.7 0 00.4-1l-.4-.6A1.5 1.5 0 014.8 1.5l.6.4a.7.7 0 001-.4l.1-.7z" clipRule="evenodd" />
+          </svg>
+        </button>
       </div>
+
+      <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)} />
 
       {/* Provider Selector */}
       <ProviderSelector
