@@ -6,3 +6,5 @@ pub mod streaming;
 pub mod orchestration;
 pub mod image;
 pub mod file_watcher;
+pub mod export;
+pub mod git_ops;

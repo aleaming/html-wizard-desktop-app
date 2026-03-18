@@ -4,6 +4,8 @@ import CenterPanel from './components/layout/CenterPanel';
 import RightSidebar from './components/layout/RightSidebar';
 import BottomPanel from './components/layout/BottomPanel';
 import SettingsDialog from './components/settings/SettingsDialog';
+import ExportDialog from './components/export/ExportDialog';
+import OnboardingWizard from './components/onboarding/OnboardingWizard';
 import { useAppStore } from './store';
 import { useProject } from './hooks/useProject';
 
@@ -48,7 +50,11 @@ const App: React.FC = () => {
   const [showLeft, setShowLeft] = useState(true);
   const [showBottom, setShowBottom] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const { openProjectDialog } = useProject();
+  const [showExport, setShowExport] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => !localStorage.getItem('hw-onboarding-complete'),
+  );
+  const { openProjectDialog, saveAllChanges } = useProject();
 
   const leftWidthRef = useRef(leftWidth);
   const rightWidthRef = useRef(rightWidth);
@@ -101,11 +107,41 @@ const App: React.FC = () => {
         e.preventDefault();
         openProjectDialog();
       }
+      // Save all: Cmd+S
+      if (mod && e.key === 's') {
+        e.preventDefault();
+        saveAllChanges();
+      }
+      // Toggle code/visual split view: Cmd+\
+      if (mod && e.key === '\\') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('toggle-code-view'));
+      }
+      // Focus AI chat input: Cmd+K
+      if (mod && e.key === 'k') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('focus-ai-input'));
+      }
+      // Quick file open: Cmd+P (future)
+      if (mod && e.key === 'p') {
+        e.preventDefault();
+        console.log('[HTML Wizard] Cmd+P: quick file open (not yet implemented)');
+      }
+      // Find in project: Cmd+Shift+F (future)
+      if (mod && e.shiftKey && e.key === 'f') {
+        e.preventDefault();
+        console.log('[HTML Wizard] Cmd+Shift+F: find in project (not yet implemented)');
+      }
+      // Export: Cmd+E
+      if (mod && e.key === 'e') {
+        e.preventDefault();
+        setShowExport(prev => !prev);
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [openProjectDialog, saveAllChanges]);
 
   const columns = [
     showLeft ? `${leftWidth}px` : '0px',
@@ -174,6 +210,18 @@ const App: React.FC = () => {
 
       {/* Settings Dialog */}
       <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)} />
+
+      {/* Export Dialog */}
+      <ExportDialog open={showExport} onClose={() => setShowExport(false)} />
+
+      {/* Onboarding Wizard */}
+      <OnboardingWizard
+        open={showOnboarding}
+        onComplete={() => {
+          localStorage.setItem('hw-onboarding-complete', 'true');
+          setShowOnboarding(false);
+        }}
+      />
     </div>
   );
 };

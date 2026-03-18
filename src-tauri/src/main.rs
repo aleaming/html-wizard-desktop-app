@@ -44,6 +44,12 @@ fn main() {
             html_wizard::commands::orchestration::get_provider_health,
             html_wizard::commands::orchestration::check_connectivity,
             html_wizard::commands::orchestration::get_usage_stats,
+            // Export
+            html_wizard::commands::export::export_project,
+            // Git operations
+            html_wizard::commands::git_ops::git_status,
+            html_wizard::commands::git_ops::git_commit,
+            html_wizard::commands::git_ops::git_snapshot,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
