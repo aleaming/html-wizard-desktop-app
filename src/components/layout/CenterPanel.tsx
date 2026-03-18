@@ -33,7 +33,7 @@ const CenterPanel: React.FC = () => {
   const previewRef = useRef<PreviewFrameHandle>(null);
   const codeEditorRef = useRef<CodeEditorHandle>(null);
 
-  const { activeFile, readFile } = useProject();
+  const { activeFile, readFile, openProjectDialog } = useProject();
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [hoveredElement, setHoveredElement] = useState<ElementOverlayData | null>(null);
   const [selectedElement, setSelectedElement] = useState<ElementSelectionData | null>(null);
@@ -229,12 +229,17 @@ const CenterPanel: React.FC = () => {
               </div>
             </>
           ) : (
-            <div className="border border-gray-700 rounded bg-white relative" style={{ width: scaledWidth, height: scaledHeight }}>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-gray-400 text-sm text-center">
-                  Open a project to see<br />the visual preview
-                </p>
-              </div>
+            <div className="flex flex-col items-center justify-center gap-4">
+              <p className="text-gray-400 text-sm text-center">
+                Open a project to see<br />the visual preview
+              </p>
+              <button
+                onClick={() => openProjectDialog()}
+                className="px-5 py-2.5 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors shadow-lg"
+              >
+                Open Project Folder
+              </button>
+              <p className="text-gray-600 text-xs">Cmd+O</p>
             </div>
           )}
         </div>

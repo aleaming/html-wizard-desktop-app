@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import { open } from '@tauri-apps/plugin-dialog';
 import { useAppStore } from '../store';
 import { ProjectInfo, FileNode } from '../types';
 import { logger } from '../utils/logger';
@@ -45,6 +46,16 @@ export function useProject() {
     return invoke<void>('create_file', { path, content });
   };
 
+  const openProjectDialog = async (): Promise<ProjectInfo | null> => {
+    const selected = await open({
+      directory: true,
+      multiple: false,
+      title: 'Open Project Folder',
+    });
+    if (!selected) return null;
+    return openProject(selected as string);
+  };
+
   const deleteFile = async (path: string): Promise<void> => {
     logger.warn('useProject', 'Deleting file', { path });
     return invoke<void>('delete_file', { path });
@@ -64,6 +75,7 @@ export function useProject() {
     activeFile,
     changeBuffer,
     openProject,
+    openProjectDialog,
     readFile,
     writeFile,
     createFile,

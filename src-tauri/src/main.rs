@@ -14,6 +14,7 @@ fn main() {
         .manage(AppState::default())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             // File operations
             html_wizard::commands::file_ops::read_file,

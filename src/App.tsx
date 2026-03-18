@@ -5,6 +5,7 @@ import RightSidebar from './components/layout/RightSidebar';
 import BottomPanel from './components/layout/BottomPanel';
 import SettingsDialog from './components/settings/SettingsDialog';
 import { useAppStore } from './store';
+import { useProject } from './hooks/useProject';
 
 const ResizeHandle: React.FC<{
   direction: 'horizontal' | 'vertical';
@@ -47,6 +48,7 @@ const App: React.FC = () => {
   const [showLeft, setShowLeft] = useState(true);
   const [showBottom, setShowBottom] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const { openProjectDialog } = useProject();
 
   const leftWidthRef = useRef(leftWidth);
   const rightWidthRef = useRef(rightWidth);
@@ -93,6 +95,11 @@ const App: React.FC = () => {
       if (mod && e.key === ',') {
         e.preventDefault();
         setShowSettings(prev => !prev);
+      }
+      // Open project: Cmd+O
+      if (mod && e.key === 'o') {
+        e.preventDefault();
+        openProjectDialog();
       }
     };
 
