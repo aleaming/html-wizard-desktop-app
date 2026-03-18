@@ -35,6 +35,14 @@ fn main() {
             html_wizard::commands::image::generate_image,
             html_wizard::commands::file_watcher::watch_file,
             html_wizard::commands::file_watcher::unwatch_file,
+            // Streaming AI
+            html_wizard::commands::streaming::send_ai_request_stream,
+            html_wizard::commands::streaming::estimate_cost,
+            // Orchestration
+            html_wizard::commands::orchestration::check_rate_limit,
+            html_wizard::commands::orchestration::get_provider_health,
+            html_wizard::commands::orchestration::check_connectivity,
+            html_wizard::commands::orchestration::get_usage_stats,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

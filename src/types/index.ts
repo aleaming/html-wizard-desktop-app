@@ -158,3 +158,68 @@ export interface EditOperation {
   timestamp: number;
   groupId?: string; // For grouping related operations (e.g., all changes from one AI suggestion)
 }
+
+// ===== Level 3: Streaming & Orchestration Types =====
+
+/** Payload received from Tauri event "ai-stream-chunk" */
+export interface StreamChunkEvent {
+  conversationId: string;
+  chunk: string;
+  isFinal: boolean;
+  tokenUsage?: TokenUsage;
+  finishReason?: string;
+}
+
+/** Cost estimate before sending a request */
+export interface CostEstimate {
+  provider: AIProviderType;
+  estimatedInputTokens: number;
+  estimatedOutputTokens: number;
+  estimatedCostUsd: number;
+}
+
+/** Real-time health status of a provider */
+export interface ProviderHealth {
+  provider: AIProviderType;
+  isHealthy: boolean;
+  lastError?: string;
+  averageLatencyMs: number;
+  successCount: number;
+  errorCount: number;
+  lastCheckedSecondsAgo?: number;
+}
+
+/** Aggregated usage statistics for a provider */
+export interface UsageStats {
+  provider: string;
+  totalRequests: number;
+  successfulRequests: number;
+  failedRequests: number;
+  totalTokensUsed: number;
+}
+
+/** Configuration passed with each streaming AI request */
+export interface AIOrchestrationConfig {
+  primaryProvider: AIProviderType;
+  fallbackProvider?: AIProviderType;
+  maxRetries: number;
+  timeoutSeconds: number;
+  enableStreaming: boolean;
+}
+
+/** Rate limit status from the backend */
+export interface RateLimitStatus {
+  provider: string;
+  requestsThisMinute: number;
+  maxRequestsPerMinute: number;
+  isLimited: boolean;
+  resetInSeconds: number;
+}
+
+/** Session usage accumulated during the current session */
+export interface SessionUsage {
+  totalTokensUsed: number;
+  totalRequestsMade: number;
+  estimatedTotalCostUsd: number;
+  providerBreakdown: Record<string, { tokens: number; requests: number; costUsd: number }>;
+}

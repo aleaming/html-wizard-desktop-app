@@ -13,6 +13,11 @@ export interface EditorSlice {
   selectedElementData: ElementSelectionData | null;
   contentEditableMode: boolean;
 
+  // Level 3: Inline Agent
+  inlineAgentVisible: boolean;
+  inlineAgentPosition: { x: number; y: number };
+  inlineAgentTargetSelector: string | null;
+
   // Actions
   selectElement: (selector: string | null) => void;
   pushOperation: (op: EditOperation) => void;
@@ -22,6 +27,9 @@ export interface EditorSlice {
   setHoveredElement: (data: ElementOverlayData | null) => void;
   setSelectedElementData: (data: ElementSelectionData | null) => void;
   setContentEditableMode: (active: boolean) => void;
+  showInlineAgent: (position: { x: number; y: number }, selector: string) => void;
+  hideInlineAgent: () => void;
+  setInlineAgentPosition: (position: { x: number; y: number }) => void;
 }
 
 export const createEditorSlice: StateCreator<AppStore, [], [], EditorSlice> = (set, get) => ({
@@ -31,6 +39,9 @@ export const createEditorSlice: StateCreator<AppStore, [], [], EditorSlice> = (s
   hoveredElement: null,
   selectedElementData: null,
   contentEditableMode: false,
+  inlineAgentVisible: false,
+  inlineAgentPosition: { x: 0, y: 0 },
+  inlineAgentTargetSelector: null,
 
   selectElement: (selector) => set({ selectedElement: selector }),
 
@@ -69,4 +80,17 @@ export const createEditorSlice: StateCreator<AppStore, [], [], EditorSlice> = (s
     selectedElement: data?.selector ?? null,
   }),
   setContentEditableMode: (active) => set({ contentEditableMode: active }),
+
+  showInlineAgent: (position, selector) => set({
+    inlineAgentVisible: true,
+    inlineAgentPosition: position,
+    inlineAgentTargetSelector: selector,
+  }),
+
+  hideInlineAgent: () => set({
+    inlineAgentVisible: false,
+    inlineAgentTargetSelector: null,
+  }),
+
+  setInlineAgentPosition: (position) => set({ inlineAgentPosition: position }),
 });

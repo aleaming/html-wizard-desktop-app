@@ -1,52 +1,120 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useCallback } from 'react';
+import { useAppStore } from '../../store';
+import { useAI } from '../../hooks/useAI';
+import { ChatMessage } from '../../types';
+import ChatPanel from '../ai/ChatPanel';
+import ProviderSelector from '../ai/ProviderSelector';
 
 interface LeftSidebarProps {
   width: number;
 }
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({ width }) => {
-  const [provider, setProvider] = useState('claude');
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef('');
 
-  const providers = [
-    { id: 'claude', label: 'Claude' },
-    { id: 'gemini', label: 'Gemini' },
-    { id: 'openai', label: 'OpenAI' },
-  ];
+  // Store state
+  const activeConversationId = useAppStore((s) => s.activeConversationId);
+  const activeProvider = useAppStore((s) => s.activeProvider);
+  const isStreaming = useAppStore((s) => s.isStreaming);
+  const addConversation = useAppStore((s) => s.addConversation);
+  const addMessage = useAppStore((s) => s.addMessage);
+  const setActiveProvider = useAppStore((s) => s.setActiveProvider);
+  const getActiveConversation = useAppStore((s) => s.getActiveConversation);
 
-  const selectedProvider = providers.find(p => p.id === provider);
+  // AI hook
+  const {
+    sendStreamingMessage,
+    cancelStream,
+    streamingContent,
+    providerHealth,
+    isOnline,
+    costEstimate,
+    sessionUsage,
+  } = useAI();
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const activeConversation = getActiveConversation();
+  const messages: ChatMessage[] = activeConversation?.messages ?? [];
 
-  const handleSend = () => {
-    const trimmed = message.trim();
-    if (!trimmed) return;
-    setMessages(prev => [...prev, { role: 'user', content: trimmed }]);
-    setMessage('');
+  const ensureConversation = useCallback((): string => {
+    if (activeConversationId) return activeConversationId;
+
+    const id = crypto.randomUUID();
+    addConversation({
+      id,
+      messages: [],
+      projectRoot: '',
+      createdAt: Date.now(),
+    });
+    return id;
+  }, [activeConversationId, addConversation]);
+
+  const handleSend = useCallback(async () => {
+    const trimmed = inputRef.current.trim();
+    if (!trimmed || isStreaming) return;
+
+    const conversationId = ensureConversation();
+
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: trimmed,
+      timestamp: Date.now(),
+    };
+    addMessage(conversationId, userMessage);
+
+    // Clear input
+    inputRef.current = '';
     if (textareaRef.current) {
+      textareaRef.current.value = '';
       textareaRef.current.style.height = 'auto';
     }
-  };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-      e.preventDefault();
-      handleSend();
+    // Send to AI and get response
+    const response = await sendStreamingMessage(trimmed, conversationId);
+    if (response) {
+      const assistantMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: response.content,
+        timestamp: Date.now(),
+      };
+      addMessage(conversationId, assistantMessage);
     }
-  };
+  }, [isStreaming, ensureConversation, addMessage, sendStreamingMessage]);
 
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-    const el = e.target;
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        handleSend();
+      }
+    },
+    [handleSend],
+  );
+
+  const handleTextareaChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      inputRef.current = e.target.value;
+      const el = e.target;
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    },
+    [],
+  );
+
+  const handleApplyCode = useCallback((code: string, language: string) => {
+    window.dispatchEvent(
+      new CustomEvent('ai-apply-code', { detail: { code, language } }),
+    );
+  }, []);
+
+  const handleProviderChange = useCallback(
+    (provider: typeof activeProvider) => {
+      setActiveProvider(provider);
+    },
+    [setActiveProvider],
+  );
 
   return (
     <div
@@ -54,67 +122,33 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ width }) => {
       style={{ width }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700">
+      <div className="flex items-center px-3 py-2 border-b border-gray-700">
         <span className="text-sm font-semibold text-gray-100">HTML Wizard AI</span>
-        <div className="relative">
-          <button
-            onClick={() => setShowDropdown(!showDropdown)}
-            className="text-xs text-gray-400 hover:text-gray-200 flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-700"
-          >
-            {selectedProvider?.label}
-            <span className="text-[10px]">&#9660;</span>
-          </button>
-          {showDropdown && (
-            <div className="absolute right-0 top-full mt-1 bg-gray-700 border border-gray-600 rounded shadow-lg z-50 min-w-[120px]">
-              {providers.map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => { setProvider(p.id); setShowDropdown(false); }}
-                  className={`block w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 ${
-                    p.id === provider ? 'text-blue-400' : 'text-gray-300'
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto px-3 py-4">
-        {messages.length === 0 ? (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-gray-500 text-sm text-center">
-              Open a project to<br />start chatting
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`text-sm px-3 py-2 rounded-lg ${
-                  msg.role === 'user'
-                    ? 'bg-blue-600 text-white ml-4'
-                    : 'bg-gray-700 text-gray-200 mr-4'
-                }`}
-              >
-                {msg.content}
-              </div>
-            ))}
-            <div ref={chatEndRef} />
-          </div>
-        )}
-      </div>
+      {/* Provider Selector */}
+      <ProviderSelector
+        activeProvider={activeProvider}
+        isOnline={isOnline}
+        providerHealth={providerHealth}
+        costEstimate={costEstimate}
+        sessionUsage={sessionUsage}
+        onProviderChange={handleProviderChange}
+      />
+
+      {/* Chat Panel — takes remaining vertical space */}
+      <ChatPanel
+        messages={messages}
+        streamingContent={streamingContent}
+        isStreaming={isStreaming}
+        onApplyCode={handleApplyCode}
+      />
 
       {/* Input Area */}
       <div className="border-t border-gray-700 p-2">
         <div className="flex items-end gap-2">
           <textarea
             ref={textareaRef}
-            value={message}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
             placeholder="Ask anything..."
@@ -122,16 +156,27 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ width }) => {
             className="flex-1 bg-gray-900 text-gray-100 text-sm rounded px-3 py-2 resize-none outline-none border border-gray-600 focus:border-blue-500 placeholder-gray-500"
             style={{ maxHeight: 120 }}
           />
-          <button
-            onClick={handleSend}
-            disabled={!message.trim()}
-            className="px-3 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm rounded font-medium transition-colors"
-          >
-            Send
-          </button>
+          {isStreaming ? (
+            <button
+              onClick={cancelStream}
+              className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white text-sm rounded font-medium transition-colors"
+            >
+              Stop
+            </button>
+          ) : (
+            <button
+              onClick={handleSend}
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm rounded font-medium transition-colors"
+            >
+              Send
+            </button>
+          )}
         </div>
         <p className="text-[10px] text-gray-500 mt-1 px-1">
-          {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}+Enter to send
+          {typeof navigator !== 'undefined' && navigator.platform?.includes('Mac')
+            ? '\u2318'
+            : 'Ctrl'}
+          +Enter to send
         </p>
       </div>
     </div>

@@ -21,6 +21,7 @@ impl std::fmt::Display for AIProviderType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AIRequest {
     pub provider: AIProviderType,
     pub prompt: String,
@@ -31,6 +32,7 @@ pub struct AIRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AIResponse {
     pub content: String,
     pub provider: AIProviderType,
@@ -39,6 +41,7 @@ pub struct AIResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ElementContext {
     pub html: String,
     pub css: Vec<String>,
@@ -48,6 +51,7 @@ pub struct ElementContext {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CssVariable {
     pub name: String,
     pub value: String,
@@ -55,6 +59,7 @@ pub struct CssVariable {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TokenUsage {
     pub prompt_tokens: u32,
     pub completion_tokens: u32,
@@ -68,6 +73,7 @@ impl Default for TokenUsage {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProviderConfig {
     pub provider_type: AIProviderType,
     pub model: String,
@@ -106,4 +112,46 @@ impl ProviderConfig {
             supports_images: true,
         }
     }
+}
+
+// --- Level 3 Types ---
+
+/// Payload emitted per streaming chunk via Tauri event "ai-stream-chunk"
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StreamChunkEvent {
+    pub conversation_id: String,
+    pub chunk: String,
+    pub is_final: bool,
+    pub token_usage: Option<TokenUsage>,
+    pub finish_reason: Option<String>,
+}
+
+/// A single message in a persisted conversation
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConversationMessage {
+    pub id: String,
+    pub role: String, // "user" | "assistant"
+    pub content: String,
+    pub timestamp: u64,
+    pub token_usage: Option<TokenUsage>,
+}
+
+/// Per-provider cost estimate
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CostEstimate {
+    pub provider: AIProviderType,
+    pub estimated_input_tokens: u32,
+    pub estimated_output_tokens: u32,
+    pub estimated_cost_usd: f64,
+}
+
+/// Global orchestration config (passed from frontend when initiating requests)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AIOrchestrationConfig {
+    pub primary_provider: AIProviderType,
+    pub fallback_provider: Option<AIProviderType>,
+    pub max_retries: u32,
+    pub timeout_seconds: u64,
+    pub enable_streaming: bool,
 }
