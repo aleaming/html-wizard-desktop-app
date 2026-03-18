@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../store';
-import { FileNode, FileType } from '../../types';
+import { FileNode } from '../../types';
 
-const FILE_TYPE_CONFIG: Record<FileType, { dot: string; label: string }> = {
+const FILE_TYPE_CONFIG: Record<string, { dot: string; label: string }> = {
   html: { dot: 'bg-orange-400', label: 'HTML' },
   css: { dot: 'bg-blue-400', label: 'CSS' },
   js: { dot: 'bg-yellow-400', label: 'JS' },
   image: { dot: 'bg-green-400', label: 'IMG' },
   other: { dot: 'bg-gray-400', label: 'FILE' },
 };
+
+const DEFAULT_FILE_CONFIG = { dot: 'bg-gray-400', label: 'FILE' };
+
+function getFileConfig(fileType: string | undefined) {
+  if (!fileType) return DEFAULT_FILE_CONFIG;
+  return FILE_TYPE_CONFIG[fileType.toLowerCase()] ?? DEFAULT_FILE_CONFIG;
+}
 
 export interface FileTreeProps {
   nodes?: FileNode[];
@@ -73,7 +80,7 @@ const FileTree: React.FC<FileTreeProps> = ({ nodes, depth = 0 }) => {
               ) : (
                 <>
                   <span
-                    className={`w-2 h-2 rounded-full flex-shrink-0 ${FILE_TYPE_CONFIG[node.fileType].dot}`}
+                    className={`w-2 h-2 rounded-full flex-shrink-0 ${getFileConfig(node.fileType).dot}`}
                   />
                   <span className="truncate">{node.name}</span>
                 </>
